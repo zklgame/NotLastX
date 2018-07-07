@@ -56,9 +56,14 @@
             <h1 class="cover-heading"></h1>
             <p class="lead">不能让贫穷限制了我们的出行选择</p>
             <p class="lead">
-              <a href="#" class="btn btn-lg btn-default">开启便利</a>
-              <input type="text" id="input_ex" class="form-control" placeholder="Input Something" required="" autofocus="">
-              <button class="btn btn-lg btn-primary btn-block" type="submit">提交</button>
+              <!--<a href="#" class="btn btn-lg btn-default">开启便利</a>-->
+              <form method="post" th:action="@{/search}" target="_blank" id="searchform">
+                <input type="text" id="start_addr" class="form-control" placeholder="起点" required="" autofocus="">
+                <input type="text" id="end_addr" class="form-control" placeholder="终点" required="" autofocus="">
+                <input type="text" id="exp_time" class="form-control" placeholder="预期时间" required="" autofocus="">
+                <!--<a href=" " class="btn btn-lg btn-default">开启便利</a>-->
+                <button type="submit" id="search-submit" class="btn btn-lg btn-primary btn-block">查询</button>
+              </form>
               </p>
           </div>
 
