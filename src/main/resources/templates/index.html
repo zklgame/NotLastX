@@ -19,6 +19,7 @@
 
     <!-- Custom styles for this template -->
     <link th:href="@{/assets/css/cover.css}" rel="stylesheet">
+    <!--<link th:href="@{/assets/css/geolocation.css}" rel="stylesheet">-->
 
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]>
@@ -30,7 +31,62 @@
       <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
       <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-  </head>
+    <style>
+        /* Always set the map height explicitly to define the size of the div
+         * element that contains the map. */
+        #map {
+            height: 100%;
+        }
+        /* Optional: Makes the sample page fill the window. */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        .controls {
+            margin-top: 10px;
+            border: 1px solid transparent;
+            border-radius: 2px 0 0 2px;
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            height: 32px;
+            outline: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        #origin-input,
+        #destination-input {
+            background-color: #fff;
+            font-family: Roboto;
+            font-size: 15px;
+            font-weight: 300;
+            margin-left: 12px;
+            padding: 0 11px 0 13px;
+            text-overflow: ellipsis;
+            width: 200px;
+        }
+
+        #origin-input:focus,
+        #destination-input:focus {
+            border-color: #4d90fe;
+        }
+
+        #mode-selector {
+            color: #fff;
+            background-color: #4d90fe;
+            margin-left: 12px;
+            padding: 5px 11px 0px 11px;
+        }
+
+        #mode-selector label {
+            font-family: Roboto;
+            font-size: 13px;
+            font-weight: 300;
+        }
+
+    </style>
+
+</head>
 
   <body>
 
@@ -57,20 +113,22 @@
             <h1 class="cover-heading"></h1>
             <p class="lead">不能让贫穷限制了我们的出行选择</p>
             <p class="lead">
-              <!--<a href="#" class="btn btn-lg btn-default">开启便利</a>-->
-                  <form method="post" th:action="@{/search}" th:object="${routeRequest}" target="_blank" id="searchform">
-                    <input type="text" th:field="*{startAddress}" class="form-control" placeholder="起点" required="" autofocus="">
-                    <input type="text" th:field="*{endAddress}" class="form-control" placeholder="终点" required="" autofocus="">
-                    <input type="text" th:field="*{expTime}" class="form-control" placeholder="预期时间(分钟)" required="" autofocus="">
-                    <!--<a href=" " class="btn btn-lg btn-default">开启便利</a>-->
-                    <button type="submit" id="search-submit" class="btn btn-lg btn-primary btn-block">查询</button>
-          </form>
+              <a href="test" class="btn btn-lg btn-default">开启便利</a>
+
+                  <!--<form method="post" th:action="@{/search}" th:object="${routeRequest}" target="_blank" id="searchform">-->
+                    <!--<input type="text" th:field="*{startAddress}" class="form-control" placeholder="起点" required="" autofocus="">-->
+                    <!--<input type="text" th:field="*{endAddress}" class="form-control" placeholder="终点" required="" autofocus="">-->
+                    <!--<input type="text" th:field="*{expTime}" class="form-control" placeholder="预期时间(分钟)" required="" autofocus="">-->
+                    <!--&lt;!&ndash;<a href=" " class="btn btn-lg btn-default">开启便利</a>&ndash;&gt;-->
+                    <!--<button type="submit" id="search-submit" class="btn btn-lg btn-primary btn-block">查询</button>-->
+          <!--</form>-->
               </p>
           </div>
 
           <div class="mastfoot">
             <div class="inner">
-              <!-- <p>Cover template for <a href="http://getbootstrap.com">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p> -->
+
+                <!-- <p>Cover template for <a href="http://getbootstrap.com">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p> -->
             </div>
           </div>
 
@@ -89,6 +147,107 @@
     <!--<script th:src="@{bootstrap/js/bootstrap-datetimepicker.min.js}"></script>-->
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script th:src="@{assets/js/ie10-viewport-bug-workaround.js}"></script>
-  
+    <!--<script th:src="@{assets/js/geolocation.js}"></script>-->
+    <!--<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us"></script>-->
+    <!--<script src="//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>-->
 
-</body></html>
+    <!--<script>-->
+        <!--// This example requires the Places library. Include the libraries=places-->
+        <!--// parameter when you first load the API. For example:-->
+        <!--// <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">-->
+
+        <!--function initMap() {-->
+            <!--var map = new google.maps.Map(document.getElementById('map'), {-->
+                <!--mapTypeControl: false,-->
+                <!--center: {lat: -33.8688, lng: 151.2195},-->
+                <!--zoom: 13-->
+            <!--});-->
+
+            <!--new AutocompleteDirectionsHandler(map);-->
+        <!--}-->
+
+        <!--/**-->
+         <!--* @constructor-->
+         <!--*/-->
+        <!--function AutocompleteDirectionsHandler(map) {-->
+            <!--this.map = map;-->
+            <!--this.originPlaceId = null;-->
+            <!--this.destinationPlaceId = null;-->
+            <!--this.travelMode = 'WALKING';-->
+            <!--var originInput = document.getElementById('origin-input');-->
+            <!--var destinationInput = document.getElementById('destination-input');-->
+            <!--var modeSelector = document.getElementById('mode-selector');-->
+            <!--this.directionsService = new google.maps.DirectionsService;-->
+            <!--this.directionsDisplay = new google.maps.DirectionsRenderer;-->
+            <!--this.directionsDisplay.setMap(map);-->
+
+            <!--var originAutocomplete = new google.maps.places.Autocomplete(-->
+                <!--originInput, {placeIdOnly: true});-->
+            <!--var destinationAutocomplete = new google.maps.places.Autocomplete(-->
+                <!--destinationInput, {placeIdOnly: true});-->
+
+            <!--this.setupClickListener('changemode-walking', 'WALKING');-->
+            <!--this.setupClickListener('changemode-transit', 'TRANSIT');-->
+            <!--this.setupClickListener('changemode-driving', 'DRIVING');-->
+
+            <!--this.setupPlaceChangedListener(originAutocomplete, 'ORIG');-->
+            <!--this.setupPlaceChangedListener(destinationAutocomplete, 'DEST');-->
+
+            <!--this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(originInput);-->
+            <!--this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(destinationInput);-->
+            <!--this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(modeSelector);-->
+        <!--}-->
+
+        <!--// Sets a listener on a radio button to change the filter type on Places-->
+        <!--// Autocomplete.-->
+        <!--AutocompleteDirectionsHandler.prototype.setupClickListener = function(id, mode) {-->
+            <!--var radioButton = document.getElementById(id);-->
+            <!--var me = this;-->
+            <!--radioButton.addEventListener('click', function() {-->
+                <!--me.travelMode = mode;-->
+                <!--me.route();-->
+            <!--});-->
+        <!--};-->
+
+        <!--AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function(autocomplete, mode) {-->
+            <!--var me = this;-->
+            <!--autocomplete.bindTo('bounds', this.map);-->
+            <!--autocomplete.addListener('place_changed', function() {-->
+                <!--var place = autocomplete.getPlace();-->
+                <!--if (!place.place_id) {-->
+                    <!--window.alert("Please select an option from the dropdown list.");-->
+                    <!--return;-->
+                <!--}-->
+                <!--if (mode === 'ORIG') {-->
+                    <!--me.originPlaceId = place.place_id;-->
+                <!--} else {-->
+                    <!--me.destinationPlaceId = place.place_id;-->
+                <!--}-->
+                <!--me.route();-->
+            <!--});-->
+
+        <!--};-->
+
+        <!--AutocompleteDirectionsHandler.prototype.route = function() {-->
+            <!--if (!this.originPlaceId || !this.destinationPlaceId) {-->
+                <!--return;-->
+            <!--}-->
+            <!--var me = this;-->
+
+            <!--this.directionsService.route({-->
+                <!--origin: {'placeId': this.originPlaceId},-->
+                <!--destination: {'placeId': this.destinationPlaceId},-->
+                <!--travelMode: this.travelMode-->
+            <!--}, function(response, status) {-->
+                <!--if (status === 'OK') {-->
+                    <!--me.directionsDisplay.setDirections(response);-->
+                <!--} else {-->
+                    <!--window.alert('Directions request failed due to ' + status);-->
+                <!--}-->
+            <!--});-->
+        <!--};-->
+
+    <!--</script>-->
+    <!--<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us&libraries=places&callback=initMap"-->
+            <!--async defer></script>-->
+  </body></html>

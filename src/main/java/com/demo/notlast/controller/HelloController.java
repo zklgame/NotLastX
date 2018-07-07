@@ -20,6 +20,13 @@ public class HelloController {
         return mav;
     }
 
+    @RequestMapping("/test")
+    public ModelAndView test() {
+        ModelAndView mav = new ModelAndView("test");
+        mav.addObject("routeRequest", new RouteRequest());
+        return mav;
+    }
+
     @PostMapping("/search")
     public ModelAndView search(@ModelAttribute RouteRequest routeRequest) {
         String startAddress = routeRequest.getStartAddress();
