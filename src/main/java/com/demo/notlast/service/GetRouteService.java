@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
 
 import java.io.*;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +28,13 @@ public class GetRouteService {
     int walk_speed = 100; //步行速度,米每分钟
     List<Line> metro = new ArrayList<>(); //整个地铁线路
     List<Point> station = new ArrayList<>(); //所有车站
+    GeoApiContext context;
 
     public GetRouteService() {
+        context = new GeoApiContext.Builder()
+                .apiKey("AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us")
+                .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 1080)))  // remove in Google!
+                .build();
         station = new ArrayList<>();
         Line line = new Line();
         try {
@@ -60,20 +67,23 @@ public class GetRouteService {
 
     public List<Route> getRoute(Point startPoint, Point endPoint, Integer tolerableDuration) {
         List<Route> result = new ArrayList<>();
-        for(int i = 0; i < station.size(); i++) {
-            for(int j = 0; j < station.size(); j++) {
+        for(int i = 0; i < 2/*station.size()*/; i++) {
+            for(int j = 0; j < 2/*station.size()*/; j++) {
                 if(i == j) continue;
-                double dis_1 = getDistance(startPoint, station.get(j));
-                double dis_2 = getDistance(station.get(j), endPoint);
-                int walk_duration_1 = (int)Math.ceil(dis_1/walk_speed);
-                int walk_duration_2 = (int)Math.ceil(dis_2/walk_speed);
+                int walk_duration_1 = getWalkingTime(startPoint, station.get(j));
+                if (walk_duration_1 < 0) continue;
+                int walk_duration_2 = getWalkingTime(station.get(j), endPoint);
+                if (walk_duration_2 < 0) continue;
                 TResult taxi_1 = taxiTrip(startPoint, station.get(i));
+                if (taxi_1 == null) continue;
                 TResult taxi_2 = taxiTrip(station.get(j), endPoint);
+                if (taxi_2 == null) continue;
                 int taxi_duration_1 = taxi_1.getDuration();
                 int taxi_duration_2 = taxi_2.getDuration();
                 double taxi_cost_1 = taxi_1.getCost();
                 double taxi_cost_2 = taxi_2.getCost();
                 Route metro_0 = metroTrip(station.get(i), station.get(j));
+                if (metro_0 == null) continue;
                 int metro_duration_0 = metro_0.getDuration();
                 double metro_cost_0 = metro_0.getCost();
                 //w-w
@@ -124,15 +134,13 @@ public class GetRouteService {
                     ret.setCost(taxi_cost_1 + metro_cost_0 + taxi_cost_2);
                     result.add(ret);
                 }
+                System.out.println(i+","+j);
             }
         }
         return result;
     }
 
-    private double getDistance(Point startPoint, Point endPoint) {
-        GeoApiContext context = new GeoApiContext.Builder()
-                .apiKey("AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us")
-                .build();
+    private int getWalkingTime(Point startPoint, Point endPoint) {
         try {
             String startPosition = startPoint.getLatitude()+","+startPoint.getLongitude();
             String endPosition = endPoint.getLatitude()+","+endPoint.getLongitude();
@@ -142,23 +150,16 @@ public class GetRouteService {
                     .mode(TravelMode.WALKING)
                     .await();
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            System.out.println(gson.toJson(result.geocodedWaypoints));
-            System.out.println(gson.toJson(result.routes));
-        } catch (ApiException e) {
+            String seconds = gson.toJson(result.routes[0].legs[0].duration.inSeconds);
+            return Integer.parseInt(seconds);
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            return -1;
         }
-        return 0;
     }
 
     private TResult taxiTrip(Point startPoint, Point endPoint) {
         TResult tResult = new TResult();
-        GeoApiContext context = new GeoApiContext.Builder()
-                .apiKey("AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us")
-                .build();
         try {
             String startPosition = startPoint.getLatitude()+","+startPoint.getLongitude();
             String endPosition = endPoint.getLatitude()+","+endPoint.getLongitude();
@@ -168,25 +169,31 @@ public class GetRouteService {
                     .mode(TravelMode.DRIVING)
                     .await();
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            System.out.println(gson.toJson(result.geocodedWaypoints));
-            System.out.println(gson.toJson(result.routes));
-        } catch (ApiException e) {
+            String secondStr = gson.toJson(result.routes[0].legs[0].duration.inSeconds);
+            String distanceStr = gson.toJson(result.routes[0].legs[0].distance.inMeters);
+            double distance = Double.parseDouble(distanceStr) / 1000;
+            double cost = getTaxiCost(distance);
+            tResult.setDuration(Integer.parseInt(secondStr));
+            tResult.setCost(cost);
+            return tResult;
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            return null;
         }
-        //todo: test data replaced
-        tResult.setCost(1.2);
-        tResult.setDuration(10);
-        return tResult;
+    }
+
+    private double getTaxiCost(double distance) {
+        if (distance < 3.0) {
+            return 14.0;
+        } else if (distance < 15) {
+            return 14 + (distance - 3) / 2.5;
+        } else {
+            return 14 + 12 * 2.5 + (distance - 15) / 3.8;
+        }
     }
 
     private Route metroTrip(Point startPoint, Point endPoint) {
-        GeoApiContext context = new GeoApiContext.Builder()
-                .apiKey("AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us")
-                .build();
+        Route route = new Route();
         try {
             String startPosition = startPoint.getLatitude()+","+startPoint.getLongitude();
             String endPosition = endPoint.getLatitude()+","+endPoint.getLongitude();
@@ -196,16 +203,23 @@ public class GetRouteService {
                     .mode(TravelMode.TRANSIT)
                     .await();
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            System.out.println(gson.toJson(result.geocodedWaypoints));
-            System.out.println(gson.toJson(result.routes));
-        } catch (ApiException e) {
+            String secondStr = gson.toJson(result.routes[0].legs[0].duration.inSeconds);
+            String distanceStr = gson.toJson(result.routes[0].legs[0].distance.inMeters);
+            double cost = getMetroCost(Double.parseDouble(distanceStr) / 1000);
+            route.setDuration(Integer.parseInt(secondStr));
+            route.setCost(cost);
+            return route;
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            return null;
         }
-        Route mResult = new Route();
-        return mResult;
+    }
+
+    private double getMetroCost(double distance) {
+        if (distance < 6) {
+            return 3;
+        } else {
+            return (distance - 6) / 10 + 4;
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.demo.notlast.controller;
 import com.demo.notlast.entity.Point;
 import com.demo.notlast.entity.Route;
 import com.demo.notlast.entity.RouteRequest;
+import com.demo.notlast.entity.Trip;
 import com.demo.notlast.service.GetRouteService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -43,6 +44,7 @@ public class HelloController {
     @RequestMapping("/test")
     public ModelAndView test() {
         ModelAndView mav = new ModelAndView("test");
+        mav.addObject("routeRequest", new RouteRequest());
         return mav;
     }
 
@@ -75,13 +77,31 @@ public class HelloController {
         String endAddress = routeRequest.getEndAddress();
         Integer tolerableDuration = routeRequest.getExpTime();
         //todo: transfer from
-        Point startPosition = new Point(123.3, 123.2);
-        Point endPosition = new Point(123.3, 123.2);
+        Point startPosition = new Point(31.173926, 121.595576);
+        Point endPosition = new Point(31.235071, 121.508147);
         List<Route> routes = getRouteService.getRoute(startPosition, endPosition, tolerableDuration);
+        System.out.println("-------------------------------------");
+        System.out.println("routes size:"+routes.size());
         for (Route r: routes) {
-            System.out.println(r.getCost());
+            List<Trip> trips = r.getVtrip();
+            for (Trip t : trips) {
+                if (t == null) {
+                    break;
+                }
+                if (t.getStartPoint() == null || t.getEndPoint() == null) {
+                    break;
+                }
+                System.out.println(t.getStartPoint().getLatitude()+", start "+t.getStartPoint().getLongitude());
+                System.out.println(t.getEndPoint().getLatitude()+", end "+t.getEndPoint().getLongitude());
+                System.out.println("type:"+t.getOp());
+                System.out.println(t.getDuration());
+                System.out.println();
+            }
+            System.out.println(r.getCost()+","+r.getDuration()+",");
         }
-        ModelAndView mav = new ModelAndView("index");
+        System.out.println("-------------------------------------");
+        ModelAndView mav = new ModelAndView("result");
+        mav.addObject("route", routes.get(0));
         return mav;
     }
 

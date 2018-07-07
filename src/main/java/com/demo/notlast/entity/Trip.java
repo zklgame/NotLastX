@@ -9,7 +9,11 @@ public class Trip {
     int op; //交通方式 0:walk 1:taxi 2:metro
     int duration;
 
-    public Trip(Point startPoint, Point point, int i, int walk_duration_1) {
+    public Trip(Point startPoint, Point endPoint, int op, int duration) {
+        this.startPoint = startPoint;
+        this.endPoint = endPoint;
+        this.op = op;
+        this.duration = duration;
     }
 
     public Point getStartPoint() {
