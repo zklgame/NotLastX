@@ -43,6 +43,7 @@ public class HelloController {
     @RequestMapping("/test")
     public ModelAndView test() {
         ModelAndView mav = new ModelAndView("test");
+        mav.addObject("routeRequest", new RouteRequest());
         return mav;
     }
 
