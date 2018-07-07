@@ -21,3 +21,9 @@ hs_err_pid*
 log/
 target/
 /bin/
+.mvn/
+mvnw*
+
+# Idea
+*.iml
+.idea/
