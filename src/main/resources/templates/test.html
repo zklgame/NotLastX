@@ -31,6 +31,11 @@
     <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
+    <link th:href="@{/assets/css/default.css}" rel="stylesheet">
+    <link th:href="@{/assets/css/component.css}" rel="stylesheet">
+
+    <script th:src="@{/assets/js/modernizr.custom.js}"></script>
+
     <style>
         /* Always set the map height explicitly to define the size of the div
          * element that contains the map. */
@@ -130,7 +135,7 @@
                     <input id="time-input" class="controls" type="text" th:field="*{expTime}" placeholder="预期时间(分钟)" required="" autofocus="">
 
                     <div id="search-input">
-                        <button id="search-input-button" type="submit" class="btn btn-lg btn-primary btn-block" style="color: blue; ">查询</button>
+                        <button id="search-input-button" type="submit" class="btn btn-lg btn-primary btn-block md-trigger" data-modal="modal-1" style="color: blue; ">查询</button>
                     </div>
 
                     <div id="mode-selector" class="controls" style="display: none">
@@ -143,10 +148,10 @@
                         <input type="radio" name="type" id="changemode-driving">
                         <label for="changemode-driving">Driving</label>
                     </div>
-                    <div id="map"></div>
 
                 </form>
 
+                <div id="map"></div>
 
 
             </div>
@@ -155,6 +160,20 @@
                 <p>总金额: 30元，总时间: 40分钟</p>
                 <p>1.起点: XX, 终点: XX, 方式: XX, 时间: XX, 金额: XX</p>
                 <p>2.起点: XX, 终点: XX, 方式: XX, 时间: XX, 金额: XX</p>
+            </div>
+
+            <div class="md-modal md-effect-2" id="modal-1">
+                <div class="md-content">
+                    <h3>为您推荐</h3>
+                    <div>
+                        <p>总金额: 30元，总时间: 40分钟</p>
+                        <ul>
+                            <li><strong>1:</strong> 起点: XX, 终点: XX, 方式: XX, 时间: XX, 金额: XX </li>
+                            <li><strong>2:</strong> 起点: XX, 终点: XX, 方式: XX, 时间: XX, 金额: XX </li>
+                        </ul>
+                        <button class="md-close">OK</button>
+                    </div>
+                </div>
             </div>
 
             <div class="mastfoot">
@@ -182,6 +201,13 @@
 <!--<script th:src="@{assets/js/geolocation.js}"></script>-->
 <!--<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us"></script>-->
 <!--<script src="//code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>-->
+
+<script th:src="@{/assets/js/classie.js}"></script>
+<script th:src="@{/assets/js/modalEffects.js}"></script>
+<!-- for the blur effect -->
+<!-- by @derSchepp https://github.com/Schepp/CSS-Filters-Polyfill -->
+<!--<script th:src="@{/assets/js/cssParser.js}"></script>-->
+<!--<script th:src="@{/assets/js/css-filters-polyfill.js}"></script>-->
 
 <script>
     // This example requires the Places library. Include the libraries=places
@@ -303,10 +329,10 @@
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us&libraries=places&callback=initMap"
         async defer></script>
 <script>
-    $("#search-input-button").click(function(){
-        // $("#mappp").css('display', 'none')
-        // $("#to_show").delay(300).fadeIn()
-
-    });
+    // $("#search-input-button").click(function(){
+    //     $("#mappp").css('display', 'none')
+    //     $("#to_show").delay(300).fadeIn()
+    //
+    // });
 </script>
 </body></html>
