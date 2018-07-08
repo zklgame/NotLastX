@@ -1,4 +1,4 @@
-## Project of Team 10 "队长别开腔是我" in Google Girl Hackthon Season IV, Shanghai
+## Project of Team 10 "队长别开腔是我" in Google Girl Hackathon Season IV, Shanghai
 
 ## How To Use:
 Replace ENTER_YOUR_KEY with your own Google Map Api key.
