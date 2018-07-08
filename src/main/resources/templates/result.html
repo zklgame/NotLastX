@@ -19,16 +19,24 @@
     </style>
 </head>
 <body>
+<div class="row">
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" style="margin-left: 10%; width: 80%;" th:if="${routes.size() > 0}">
+        <h2 class="sub-header" th:text="${'耗时： ' + routes.get(0).duration + ' 分钟'}" style="text-align: center;"></h2>
+        <h2 class="sub-header" th:text="${'价钱：' + routes.get(0).cost + ' 元'}" style="text-align: center;">元</h2>
+    </div>
+    <div th:if="${routes.size() == 0}">No route!</div>
+</div>
 <div id="map"></div>
-<script th:inline="javascript">
+
+<script th:inline="javascript" th:if="${routes.size() > 0}">
     /*<![CDATA[*/
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
             zoom: 7,
-            center: {lat: /*[[${(route.vtrip[0].startPoint.latitude + route.vtrip[0].endPoint.latitude) / 2}]]*/, lng: /*[[${(route.vtrip[0].startPoint.longitude + route.vtrip[0].endPoint.longitude) / 2}]]*/}
+            center: {lat: /*[[${(routes.get(0).vtrip[0].startPoint.latitude + routes.get(0).vtrip[0].endPoint.latitude) / 2}]]*/, lng: /*[[${(routes.get(0).vtrip[0].startPoint.longitude + routes.get(0).vtrip[0].endPoint.longitude) / 2}]]*/}
         });
 
-        /*[# th:each="trip : ${route.vtrip}"]*/
+        /*[# th:each="trip : ${routes.get(0).vtrip}"]*/
         poly = new google.maps.Polyline({
             strokeColor: '#000000',
             strokeOpacity: 1.0,
@@ -59,26 +67,8 @@
 <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us&callback=initMap">
 </script>
-<!--<h1 th:text="${route.duration}"></h1>-->
-<!--<h1 th:text="${route.cost}"></h1>-->
-
-
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" style="margin-left: 10%; width: 80%;">
-
-            <h2 class="sub-header" th:text="${route.duration}" style="text-align: center;"></h2>
-            <h2 class="sub-header" th:text="${route.cost}" style="text-align: center;"></h2>
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <tr th:each="writer,itrStat : ${writers}"  th:class="${itrStat.even}? 'even_css_class':'odd_css_class'" >
-                        <td th:text="${#strings.startsWith(writer.location,'Hi')}? #{myblog.chief}">Name</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
+<!--<h1 th:text="${routes.duration}"></h1>-->
+<!--<h1 th:text="${routes.cost}"></h1>-->
 
 <!-- Bootstrap core JavaScript
    ================================================== -->

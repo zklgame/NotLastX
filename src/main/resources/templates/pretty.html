@@ -119,7 +119,7 @@
                 </div>
             </div>
 
-            <div class="inner cover" style="">
+            <div id="mappp" class="inner cover" style="">
                 <form method="post" th:action="@{/search}" th:object="${routeRequest}" target="_blank" id="searchform">
                     <input id="origin-input" class="controls" type="text"
                            placeholder="起点" th:field="*{startAddress}">
@@ -143,11 +143,18 @@
                         <input type="radio" name="type" id="changemode-driving">
                         <label for="changemode-driving">Driving</label>
                     </div>
+                    <div id="map"></div>
 
                 </form>
 
 
-                <div id="map"></div>
+
+            </div>
+
+            <div id="to_show" style="display: none">
+                <p>总金额: 30元，总时间: 40分钟</p>
+                <p>1.起点: XX, 终点: XX, 方式: XX, 时间: XX, 金额: XX</p>
+                <p>2.起点: XX, 终点: XX, 方式: XX, 时间: XX, 金额: XX</p>
             </div>
 
             <div class="mastfoot">
@@ -182,58 +189,124 @@
     // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
 
     function initMap() {
-        // var map = new google.maps.Map(document.getElementById('map'), {
-        //     mapTypeControl: false,
-        //     center: {lat: -33.8688, lng: 151.2195},
-        //     zoom: 13
-        // });
-        //
-        // var markerPoints = [];
-        //
-        // var directionDisplay;
-        var directionsService = new google.maps.DirectionsService();
-        //
-        // directionsDisplay = new google.maps.DirectionsRenderer();
-        // directionsDisplay.setMap(map);
+        var map = new google.maps.Map(document.getElementById('map'), {
+            mapTypeControl: false,
+            center: {lat: -33.8688, lng: 151.2195},
+            zoom: 13
+        });
 
-        ////
-
-
-            var start = new google.maps.LatLng(51.47482547819850,-0.37739553384529);
-            var myOptions = {
-                zoom:7,
-                mapTypeId: google.maps.MapTypeId.ROADMAP,
-                center: start
-            }
-            var map = new google.maps.Map(document.getElementById("map"), myOptions);
-
-            function renderDirections(result) {
-                var directionsRenderer = new google.maps.DirectionsRenderer();
-                directionsRenderer.setMap(map);
-                directionsRenderer.setDirections(result);
-            }
-
-            function requestDirections(start, end) {
-                directionsService.route({
-                    origin: start,
-                    destination: end,
-                    travelMode: google.maps.DirectionsTravelMode.DRIVING
-                }, function(result) {
-                    renderDirections(result);
-                });
-            }
-
-            requestDirections('(51.47482547819850,-0.37739553384529)', '(51.59512428598160,-0.17190814889409)');
-            requestDirections('EC1V 0AH', '(51.47615506206120, -0.37795315370703)');
-
-
-
+        new AutocompleteDirectionsHandler(map);
     }
 
+    /**
+     * @constructor
+     */
+    function AutocompleteDirectionsHandler(map) {
+        this.map = map;
+        this.originPlaceId = null;
+        this.destinationPlaceId = null;
+        this.travelMode = 'TRANSIT';
+        var originInput = document.getElementById('origin-input');
+        var destinationInput = document.getElementById('destination-input');
+        var timeInput = document.getElementById('time-input');
+        var searchInput = document.getElementById('search-input')
+        var modeSelector = document.getElementById('mode-selector');
+        this.directionsService = new google.maps.DirectionsService;
+        this.directionsDisplay = new google.maps.DirectionsRenderer;
+        this.directionsDisplay.setMap(map);
 
+        var originAutocomplete = new google.maps.places.Autocomplete(
+            originInput, {placeIdOnly: true});
+        var destinationAutocomplete = new google.maps.places.Autocomplete(
+            destinationInput, {placeIdOnly: true});
+        // var timeAutocomplete = new google.maps.places.Autocomplete(
+        //     timeInput, {placeIdOnly: false});
+
+        this.setupClickListener('changemode-walking', 'WALKING');
+        this.setupClickListener('changemode-transit', 'TRANSIT');
+        this.setupClickListener('changemode-driving', 'DRIVING');
+
+        this.setupPlaceChangedListener(originAutocomplete, 'ORIG');
+        this.setupPlaceChangedListener(destinationAutocomplete, 'DEST');
+        // this.setupPlaceChangedListener(timeAutocomplete, 'TIME');
+
+        this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(originInput);
+        this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(destinationInput);
+        this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(timeInput);
+        this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(searchInput);
+        this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(modeSelector);
+    }
+
+    // Sets a listener on a radio button to change the filter type on Places
+    // Autocomplete.
+    AutocompleteDirectionsHandler.prototype.setupClickListener = function(id, mode) {
+        var radioButton = document.getElementById(id);
+        var me = this;
+        radioButton.addEventListener('click', function() {
+            me.travelMode = mode;
+            me.route();
+        });
+    };
+
+    AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function(autocomplete, mode) {
+        var me = this;
+        autocomplete.bindTo('bounds', this.map);
+        autocomplete.addListener('place_changed', function() {
+            var place = autocomplete.getPlace();
+            if (!place.place_id) {
+                window.alert("Please select an option from the dropdown list.");
+                return;
+            }
+            if (mode === 'ORIG') {
+                me.originPlaceId = place.place_id;
+            } else {
+                me.destinationPlaceId = place.place_id;
+            }
+            me.route();
+        });
+
+    };
+
+    AutocompleteDirectionsHandler.prototype.route = function() {
+        if (!this.originPlaceId || !this.destinationPlaceId) {
+            return;
+        }
+        var me = this;
+
+        this.directionsService.route({
+            origin: {'placeId': this.originPlaceId},
+            destination: {'placeId': this.destinationPlaceId},
+            travelMode: this.travelMode,
+            transitOptions: {
+                departureTime: new Date(1531190894884),
+            },
+        }, function(response, status) {
+            if (status === 'OK') {
+                me.directionsDisplay.setDirections(response);
+                steps = response.routes[0].legs[0].steps;
+                total_time = 0;
+                for(var i = 0; i < steps.length; i ++) {
+                    total_time += steps[i].duration.value;
+                }
+                hours = parseInt(total_time / 3600)
+                minutes = parseInt((total_time % 3600) / 60)
+                str = "共所需：" + hours + "时" + minutes + "分"
+                console.log(str)
+                alert(str)
+            } else {
+                window.alert('Directions request failed due to ' + status);
+            }
+        });
+    };
 
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us&libraries=places&callback=initMap"
         async defer></script>
+<script>
+    $("#search-input-button").click(function(){
+        // $("#mappp").css('display', 'none')
+        // $("#to_show").delay(300).fadeIn()
 
+    });
+</script>
 </body></html>

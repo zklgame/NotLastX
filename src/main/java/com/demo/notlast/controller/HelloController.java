@@ -42,7 +42,6 @@ public class HelloController {
     public HelloController() {
         context = new GeoApiContext.Builder()
                 .apiKey("AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us")
-                .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 1080)))  // remove in Google!
                 .build();
     }
 
@@ -53,28 +52,18 @@ public class HelloController {
         return mav;
     }
 
-    @RequestMapping("/test")
-    public ModelAndView test() {
-        ModelAndView mav = new ModelAndView("test");
+    @RequestMapping("/pretty")
+    public ModelAndView pretty() {
+        ModelAndView mav = new ModelAndView("pretty");
         mav.addObject("routeRequest", new RouteRequest());
-        return mav;
-    }
-
-    @RequestMapping("/testGoogleMap")
-    public ModelAndView testGoogleMap() {
-        ModelAndView mav = new ModelAndView("testGoogleMap");
-
-
-
         return mav;
     }
 
     private Point transfer(String address) {
         try {
-            GeocodingResult[] results = new GeocodingResult[0];
-            results = GeocodingApi.geocode(context,
-                    "上海东方明珠").await();
+            GeocodingResult[] results = GeocodingApi.geocode(context, address).await();
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            if (results.length < 1) return null;
             String latitude = gson.toJson(results[0].geometry.location.lat);
             String longitude = gson.toJson(results[0].geometry.location.lng);
             return new Point(Double.parseDouble(latitude), Double.parseDouble(longitude));

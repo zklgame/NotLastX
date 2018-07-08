@@ -23,7 +23,6 @@ import java.util.List;
 @Service
 public class GetRouteService {
 
-    // fake data todo: get from API
     int default_walk_duration = 10; //最长可步行时间默认值
     int walk_speed = 100; //步行速度,米每分钟
     List<Line> metro = new ArrayList<>(); //整个地铁线路
@@ -33,7 +32,6 @@ public class GetRouteService {
     public GetRouteService() {
         context = new GeoApiContext.Builder()
                 .apiKey("AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us")
-                .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 1080)))  // remove in Google!
                 .build();
         station = new ArrayList<>();
         Line line = new Line();
@@ -94,7 +92,7 @@ public class GetRouteService {
                     //ret += metro_0.vtrip; //////////////////
                     ret.combineTrip(metro_0);
                     ret.addTrip(new Trip(station.get(j), endPoint, 0, walk_duration_2));
-                    ret.setDuration(t_ww);
+                    ret.setDuration(t_ww / 60);
                     ret.setCost(metro_cost_0);
                     result.add(ret);
                 }
@@ -106,8 +104,8 @@ public class GetRouteService {
                     //ret += metro_0.vtrip; //////////////////
                     ret.combineTrip(metro_0);
                     ret.addTrip(new Trip(station.get(j), endPoint, 1, taxi_duration_2));
-                    ret.setDuration(t_wt);
-                    ret.setCost(metro_cost_0 + taxi_cost_2);
+                    ret.setDuration(t_wt / 60);
+                    ret.setCost((metro_cost_0 + taxi_cost_2));
                     result.add(ret);
                 }
                 //t-w
@@ -118,8 +116,8 @@ public class GetRouteService {
                     //ret += metro_0.vtrip; //////////////////
                     ret.combineTrip(metro_0);
                     ret.addTrip(new Trip(station.get(j), endPoint, 0, walk_duration_2));
-                    ret.setDuration(t_tw);
-                    ret.setCost(taxi_cost_1 + metro_cost_0);
+                    ret.setDuration(t_tw / 60);
+                    ret.setCost((taxi_cost_1 + metro_cost_0));
                     result.add(ret);
                 }
                 //t-t
@@ -130,8 +128,8 @@ public class GetRouteService {
                     //ret += metro_0.vtrip; //////////////////
                     ret.combineTrip(metro_0);
                     ret.addTrip(new Trip(station.get(j), endPoint, 1, taxi_duration_2));
-                    ret.setDuration(t_tt);
-                    ret.setCost(taxi_cost_1 + metro_cost_0 + taxi_cost_2);
+                    ret.setDuration(t_tt / 60);
+                    ret.setCost((taxi_cost_1 + metro_cost_0 + taxi_cost_2));
                     result.add(ret);
                 }
                 System.out.println(i+","+j);
@@ -193,7 +191,7 @@ public class GetRouteService {
     }
 
     private Route metroTrip(Point startPoint, Point endPoint) {
-        Route route = new Route();
+        Route mResult = new Route();
         try {
             String startPosition = startPoint.getLatitude()+","+startPoint.getLongitude();
             String endPosition = endPoint.getLatitude()+","+endPoint.getLongitude();
@@ -203,12 +201,35 @@ public class GetRouteService {
                     .mode(TravelMode.TRANSIT)
                     .await();
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            String secondStr = gson.toJson(result.routes[0].legs[0].duration.inSeconds);
-            String distanceStr = gson.toJson(result.routes[0].legs[0].distance.inMeters);
-            double cost = getMetroCost(Double.parseDouble(distanceStr) / 1000);
-            route.setDuration(Integer.parseInt(secondStr));
-            route.setCost(cost);
-            return route;
+            String duration = gson.toJson(result.routes[0].legs[0].duration.inSeconds);
+            mResult.setDuration(Integer.parseInt(duration));
+            double cost = 0;
+            int distance = 0;
+            for(int i=0; i<result.routes[0].legs[0].steps.length; ++i){
+                double start_lat = result.routes[0].legs[0].steps[i].startLocation.lat;
+                double start_lng = result.routes[0].legs[0].steps[i].startLocation.lng;
+                double end_lat = result.routes[0].legs[0].steps[i].startLocation.lat;
+                double end_lng = result.routes[0].legs[0].steps[i].startLocation.lng;
+                String step_duration_str = gson.toJson(result.routes[0].legs[0].duration.inSeconds);
+                int step_duration = Integer.parseInt(step_duration_str);
+                String step_distance_str = gson.toJson(result.routes[0].legs[0].distance.inMeters);
+                int flag = 1;
+                String travel_mode = gson.toJson(result.routes[0].legs[0].steps[i].travelMode);
+                if(travel_mode.equals("TRANSIT") || travel_mode.equals("transit")){
+                    flag = 2;
+                    distance += Integer.parseInt(step_distance_str);
+                }
+                else if(travel_mode.equals("WALKING") || travel_mode.equals("walking")){
+                    flag = 0;
+                }
+                Point start_loc = new Point(start_lng, start_lat);
+                Point end_loc = new Point(end_lng, end_lat);
+                Trip step = new Trip(start_loc, end_loc, flag, step_duration);
+                mResult.addTrip(step);
+            }
+            cost = getMetroCost(distance / 1000.0);
+            mResult.setCost(cost);
+            return mResult;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
