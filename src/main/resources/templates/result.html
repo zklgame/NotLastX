@@ -1,15 +1,63 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/html">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Result</title>
+    <style>
+        /* Always set the map height explicitly to define the size of the div
+         * element that contains the map. */
+        #map {
+            height: 100%;
+        }
+        /* Optional: Makes the sample page fill the window. */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
 </head>
 <body>
+<div id="map"></div>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 7,
+            center: {lat: /*[[${(route.vtrip[0].startPoint.latitude + route.vtrip[0].endPoint.latitude) / 2}]]*/, lng: /*[[${(route.vtrip[0].startPoint.longitude + route.vtrip[0].endPoint.longitude) / 2}]]*/}
+        });
 
-<h1 th:text="${route.duration}"></h1>
-<h1 th:text="${route.cost}"></h1>
-<tr th:each="writer,itrStat : ${writers}"  th:class="${itrStat.even}? 'even_css_class':'odd_css_class'" >
-    <td th:text="${#strings.startsWith(writer.location,'Hi')}? #{myblog.chief}">Name</td>
-</tr>
+        /*[# th:each="trip : ${route.vtrip}"]*/
+        poly = new google.maps.Polyline({
+            strokeColor: '#000000',
+            strokeOpacity: 1.0,
+            strokeWeight: 3
+        });
+        poly.setMap(map);
+        path = poly.getPath();
+        var beginLatLng = new google.maps.LatLng(/*[[${trip.startPoint.latitude}]]*/, /*[[${trip.startPoint.longitude}]]*/);
+        var endLatLng = new google.maps.LatLng(/*[[${trip.endPoint.latitude}]]*/, /*[[${trip.endPoint.longitude}]]*/);
+        path.push(beginLatLng);
+        path.push(endLatLng);
+        // Add a new marker at the new plotted point on the polyline.
+        var beginMarker = new google.maps.Marker({
+            position: beginLatLng,
+            title: 'OP: [[${trip.op}]] Duration: [[${trip.duration}]] Length: ' + path.getLength(),
+            map: map
+        });
+        var endMarker = new google.maps.Marker({
+            position: endLatLng,
+            title: 'OP: [[${trip.op}]] Duration: [[${trip.duration}]] Length: ' + path.getLength(),
+            map: map
+        });
+
+        /*[/]*/
+    }
+    /*]]>*/
+</script>
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us&callback=initMap">
+</script>
 </body>
 </html>

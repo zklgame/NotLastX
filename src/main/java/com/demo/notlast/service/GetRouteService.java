@@ -67,8 +67,8 @@ public class GetRouteService {
 
     public List<Route> getRoute(Point startPoint, Point endPoint, Integer tolerableDuration) {
         List<Route> result = new ArrayList<>();
-        for(int i = 0; i < 2/*station.size()*/; i++) {
-            for(int j = 0; j < 2/*station.size()*/; j++) {
+        for(int i = 0; i < 3/*station.size()*/; i++) {
+            for(int j = 0; j < 3/*station.size()*/; j++) {
                 if(i == j) continue;
                 int walk_duration_1 = getWalkingTime(startPoint, station.get(j));
                 if (walk_duration_1 < 0) continue;

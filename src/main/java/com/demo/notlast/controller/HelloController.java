@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -33,6 +36,15 @@ public class HelloController {
 
     @Autowired
     private GetRouteService getRouteService;
+
+    private GeoApiContext context;
+
+    public HelloController() {
+        context = new GeoApiContext.Builder()
+                .apiKey("AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us")
+                .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 1080)))  // remove in Google!
+                .build();
+    }
 
     @RequestMapping("/")
     public ModelAndView index() {
@@ -51,57 +63,81 @@ public class HelloController {
     @RequestMapping("/testGoogleMap")
     public ModelAndView testGoogleMap() {
         ModelAndView mav = new ModelAndView("testGoogleMap");
-        GeoApiContext context = new GeoApiContext.Builder()
-                .apiKey("AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us")
-                .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 1080)))  // remove in Google!
-                .build();
-        GeocodingResult[] results = new GeocodingResult[0];
+
+
+
+        return mav;
+    }
+
+    private Point transfer(String address) {
         try {
+            GeocodingResult[] results = new GeocodingResult[0];
             results = GeocodingApi.geocode(context,
                     "上海东方明珠").await();
-        } catch (ApiException e) {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            String latitude = gson.toJson(results[0].geometry.location.lat);
+            String longitude = gson.toJson(results[0].geometry.location.lng);
+            return new Point(Double.parseDouble(latitude), Double.parseDouble(longitude));
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            return null;
         }
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        System.out.println(gson.toJson(results[0].geometry));
-        return mav;
     }
 
     @PostMapping("/search")
     public ModelAndView search(@ModelAttribute RouteRequest routeRequest) {
+        ModelAndView mav;
         String startAddress = routeRequest.getStartAddress();
         String endAddress = routeRequest.getEndAddress();
-        Integer tolerableDuration = routeRequest.getExpTime();
-        //todo: transfer from
-        Point startPosition = new Point(31.173926, 121.595576);
-        Point endPosition = new Point(31.235071, 121.508147);
-        List<Route> routes = getRouteService.getRoute(startPosition, endPosition, tolerableDuration);
-        System.out.println("-------------------------------------");
-        System.out.println("routes size:"+routes.size());
-        for (Route r: routes) {
-            List<Trip> trips = r.getVtrip();
-            for (Trip t : trips) {
-                if (t == null) {
-                    break;
+        Integer tolerableDuration = routeRequest.getExpTime() * 60;
+        //Point startPosition = new Point(31.173926, 121.595576);
+        //Point endPosition = new Point(31.235071, 121.508147);
+        Point startPosition = transfer(startAddress);
+        Point endPosition = transfer(endAddress);
+        if (startPosition != null && endPosition != null) {
+            List<Route> routes = getRouteService.getRoute(startPosition, endPosition, tolerableDuration);
+//            System.out.println("-------------------------------------");
+//            System.out.println("routes size:" + routes.size());
+//            for (Route r : routes) {
+//                List<Trip> trips = r.getVtrip();
+//                for (Trip t : trips) {
+//                    if (t == null) {
+//                        break;
+//                    }
+//                    if (t.getStartPoint() == null || t.getEndPoint() == null) {
+//                        break;
+//                    }
+//                    System.out.println(t.getStartPoint().getLatitude() + ", start " + t.getStartPoint().getLongitude());
+//                    System.out.println(t.getEndPoint().getLatitude() + ", end " + t.getEndPoint().getLongitude());
+//                    System.out.println("type:" + t.getOp());
+//                    System.out.println(t.getDuration());
+//                    System.out.println();
+//                }
+//                System.out.println(r.getCost() + "," + r.getDuration() + ",");
+//            }
+//            System.out.println("-------------------------------------");
+            Collections.sort(routes, new Comparator<Route>() {
+                @Override
+                public int compare(Route r1, Route r2) {
+                    return (int)(r1.getCost() - r2.getCost());
                 }
-                if (t.getStartPoint() == null || t.getEndPoint() == null) {
-                    break;
-                }
-                System.out.println(t.getStartPoint().getLatitude()+", start "+t.getStartPoint().getLongitude());
-                System.out.println(t.getEndPoint().getLatitude()+", end "+t.getEndPoint().getLongitude());
-                System.out.println("type:"+t.getOp());
-                System.out.println(t.getDuration());
-                System.out.println();
+            });
+//            Collections.sort(routes, new Comparator<Route>() {
+//                @Override
+//                public int compare(Route r1, Route r2) {
+//                    return r1.getDuration() - r2.getDuration();
+//                }
+//            });
+            List<Route> topRoutes = new ArrayList<>();
+            for (int i = 0; i < Math.min(3, routes.size()); i++) {
+                topRoutes.add(routes.get(i));
             }
-            System.out.println(r.getCost()+","+r.getDuration()+",");
+            mav = new ModelAndView("result");
+            mav.addObject("routes", topRoutes);
+        } else {
+            mav = new ModelAndView("index");
+            mav.addObject("routeRequest", new RouteRequest());
         }
-        System.out.println("-------------------------------------");
-        ModelAndView mav = new ModelAndView("result");
-        mav.addObject("route", routes.get(0));
         return mav;
     }
 
