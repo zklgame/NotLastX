@@ -52,6 +52,13 @@ public class HelloController {
         return mav;
     }
 
+    @RequestMapping("/test")
+    public ModelAndView test() {
+        ModelAndView mav = new ModelAndView("test");
+        mav.addObject("routeRequest", new RouteRequest());
+        return mav;
+    }
+
     @RequestMapping("/pretty")
     public ModelAndView pretty() {
         ModelAndView mav = new ModelAndView("pretty");

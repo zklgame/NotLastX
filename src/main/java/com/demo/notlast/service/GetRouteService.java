@@ -93,7 +93,7 @@ public class GetRouteService {
                     ret.combineTrip(metro_0);
                     ret.addTrip(new Trip(station.get(j), endPoint, 0, walk_duration_2));
                     ret.setDuration(t_ww / 60);
-                    ret.setCost(metro_cost_0);
+                    ret.setCost((int)metro_cost_0);
                     result.add(ret);
                 }
                 //w-t
@@ -105,7 +105,7 @@ public class GetRouteService {
                     ret.combineTrip(metro_0);
                     ret.addTrip(new Trip(station.get(j), endPoint, 1, taxi_duration_2));
                     ret.setDuration(t_wt / 60);
-                    ret.setCost((metro_cost_0 + taxi_cost_2));
+                    ret.setCost((int)(metro_cost_0 + taxi_cost_2));
                     result.add(ret);
                 }
                 //t-w
@@ -117,7 +117,7 @@ public class GetRouteService {
                     ret.combineTrip(metro_0);
                     ret.addTrip(new Trip(station.get(j), endPoint, 0, walk_duration_2));
                     ret.setDuration(t_tw / 60);
-                    ret.setCost((taxi_cost_1 + metro_cost_0));
+                    ret.setCost((int)(taxi_cost_1 + metro_cost_0));
                     result.add(ret);
                 }
                 //t-t
@@ -129,7 +129,7 @@ public class GetRouteService {
                     ret.combineTrip(metro_0);
                     ret.addTrip(new Trip(station.get(j), endPoint, 1, taxi_duration_2));
                     ret.setDuration(t_tt / 60);
-                    ret.setCost((taxi_cost_1 + metro_cost_0 + taxi_cost_2));
+                    ret.setCost((int)(taxi_cost_1 + metro_cost_0 + taxi_cost_2));
                     result.add(ret);
                 }
                 System.out.println(i+","+j);
