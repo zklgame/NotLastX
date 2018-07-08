@@ -31,7 +31,7 @@ public class GetRouteService {
 
     public GetRouteService() {
         context = new GeoApiContext.Builder()
-                .apiKey("AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us")
+                .apiKey("ENTER_YOUR_KEY")
                 .build();
         station = new ArrayList<>();
         Line line = new Line();

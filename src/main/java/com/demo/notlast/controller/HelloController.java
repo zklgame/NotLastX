@@ -41,7 +41,7 @@ public class HelloController {
 
     public HelloController() {
         context = new GeoApiContext.Builder()
-                .apiKey("AIzaSyCrrIbD_sr2g6Li14JKQdyZe6y8KJ1S9us")
+                .apiKey("ENTER_YOUR_KEY")
                 .build();
     }
 
