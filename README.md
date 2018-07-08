@@ -8,3 +8,6 @@ Replace ENTER_YOUR_KEY with your own Google Map Api key.
 ***Front-end***: Kaili Zhu, using HTML+JQuery + CSS + Bootstrap + Google Map JS Api   
 ***Back-end***: Ningting Pan, Jinli Zhong, using Spring Boot + JAVA + Google Map JAVA Api   
 ***Algorithm***: Jiale Zhou, Yue Hu, about path planning     
+
+## More:
+http://kaili.ai/2018/07/09/google-girl-hackthon-season-iv/
